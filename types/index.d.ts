@@ -14,16 +14,20 @@ declare namespace ZSquared{
     categories: string[],
     publishDate: Date,
     publish: boolean,
-    authors: string[]
+    authors: string[],
+    description: IRichText[],
+    image?: string,
+    featured?: boolean
   }
 
-  type IAnnotations = RichTextItemResponse["annotations"]
+  type IAnnotations = RichTextItemResponse["annotations"] & { language?: string }
   type AnnotationsColor = RichTextItemResponse["annotations"]["color"]
 
   type IRichText = {
     plainText: string,
     annotations: IAnnotations,
-    href?: string
+    href?: string,
+    inlineLatex?: boolean
   }
 
   type IImage = {
@@ -40,15 +44,36 @@ declare namespace ZSquared{
     children?: IListItem[]
   }
 
-  type IBlockContent = IRichText | IImage | IList
+  type IEquation = {
+    expression: string
+  }
+
+  type IBlockContent = IRichText | IImage | IList | IEquation
+
+  type BlockType = "heading_1" | "heading_2" | "heading_3" | "paragraph" | "image" | "numbered_list" | "bulleted_list" | "equation" | "code"
 
   type IBlock = {
-    type: string,
+    type: BlockType,
     content: IBlockContent[]
   }
 
+  type UnmergedBlockType = Omit<BlockType, "numbered_list" | "bulleted_list"> | "numbered_list_item" | "bulleted_list_item"
+
   type IUnmergedBlock = {
-    type: string,
+    type: UnmergedBlockType,
     content: Omit<IBlockContent, "IList"> | IListItem
   }
+
+  type IPost = {
+    metadata: IMetadata,
+    content: IBlock[]
+  }
+
+  function isAnmar(who: string): who is Ammar
+
+  function isRichTextContent(content: IBlockContent | any): content is IRichText;
+  function isImageContent(content: IBlockContent | any): content is IImage;
+  function isListContent(content: IBlockContent | any): content is IList;
+  function isEquationContent(content: IBlockContent | any): content is IEquation;
+
 }

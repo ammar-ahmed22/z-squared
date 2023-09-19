@@ -1,4 +1,4 @@
-import { Resolver, Query, Arg } from "type-graphql";
+import { Resolver, Query, Arg, ArgsType, Field, Args } from "type-graphql";
 import { Client } from "@notionhq/client";
 import { isFullPage } from "@notionhq/client";
 import { PageObjectResponse, BlockObjectResponse, PartialBlockObjectResponse } from "@notionhq/client/build/src/api-endpoints";
@@ -7,6 +7,7 @@ import {
   IListItem,
   IBlock,
   IUnmergedBlock,
+  IRichText
 } from "@z-squared/types";
 import { 
   extractPropertyValue,
@@ -15,8 +16,20 @@ import {
   mergeListItems
 } from "../helpers/notion";
 import { Metadata } from "../models/Metadata";
-import { Block } from "../models/Content";
+import { Block, Post } from "../models/Content";
 
+
+@ArgsType()
+class MetadataArgs{
+  @Field(returns => [String], { nullable: true })
+  categories: string[] = []
+
+  @Field({ nullable: true, defaultValue: false })
+  onlyPublished: boolean = false
+
+  @Field({ nullable: true, defaultValue: true })
+  ascending: boolean = true
+}
 
 @Resolver()
 export class BlogResolver{
@@ -35,11 +48,12 @@ export class BlogResolver{
    * @returns {Promise<IMetadata>}
    */
   private createMetadata = async (page: PageObjectResponse) : Promise<IMetadata> => {
-    const { Name, Authors, Categories, PublishDate, Publish, Slug } = page.properties;
+    
+    const { Name, Authors, Categories, PublishDate, Publish, Slug, Description, Featured } = page.properties;
     const name = extractPropertyValue(Name) as string;
-    let slug = extractPropertyValue(Slug) as string;
-    if (slug === ""){
-      slug = name.toLowerCase().split(" ").join("-");
+    const slug : IRichText[]  = extractPropertyValue(Slug) as IRichText[];
+    const nameSlug = name.toLowerCase().split(" ").join("-")
+    if (!slug.length){
       await this.notion.pages.update({
         page_id: page.id,
         properties: {
@@ -47,7 +61,7 @@ export class BlogResolver{
             rich_text: [
               {
                 text: {
-                  content: slug
+                  content: nameSlug
                 }
               }
             ]
@@ -56,14 +70,27 @@ export class BlogResolver{
       })
     }
 
+    let image: string;
+    if (page.cover){
+      if (page.cover.type === "external"){
+        image = page.cover.external.url
+      }
+      if (page.cover.type === "file"){
+        image = page.cover.file.url
+      }
+    }
+
     return {
       id: page.id,
       name,
-      slug,
+      slug: !slug.length ? nameSlug : slug.map( item => item.plainText ).join(""),
       authors: extractPropertyValue(Authors) as string[],
       categories: extractPropertyValue(Categories) as string[],
-      publishDate: (extractPropertyValue(PublishDate) as { start: Date, end: Date | undefined }).start,
-      publish: extractPropertyValue(Publish) as boolean
+      publishDate: (extractPropertyValue(PublishDate) as { start: Date, end: Date | undefined }).start ?? new Date(),
+      publish: extractPropertyValue(Publish) as boolean,
+      description: extractPropertyValue(Description) as IRichText[],
+      image,
+      featured: extractPropertyValue(Featured) as boolean
     }
   }
 
@@ -78,7 +105,7 @@ export class BlogResolver{
         const type = block.type;
         return {
           type: block.type,
-          content: block[type].rich_text.map(mapRichText)
+          content: block[type].rich_text.map(r => mapRichText(r))
         }
       }
 
@@ -88,7 +115,7 @@ export class BlogResolver{
             type: "image",
             content: [{
               url: block.image.external.url,
-              caption: block.image.caption.map(mapRichText)
+              caption: block.image.caption.map(r => mapRichText(r))
             }]
           }
         }
@@ -97,7 +124,7 @@ export class BlogResolver{
             type: "image",
             content: [{
               url: block.image.file.url,
-              caption: block.image.caption.map(mapRichText)
+              caption: block.image.caption.map(r => mapRichText(r))
             }]
           }
         }
@@ -109,13 +136,32 @@ export class BlogResolver{
       ){
         const type = block.type;
         const listItem : IListItem = {
-          content: block[type].rich_text.map(mapRichText)
+          content: block[type].rich_text.map(r => mapRichText(r))
         }
         await getAllListChildren(this.notion, block, listItem);
         return { 
           type, 
           content: listItem
         };
+      }
+
+      if (block.type === "equation") {
+        return {
+          type: block.type,
+          content: [
+            {
+              expression: block.equation.expression
+            }
+          ]
+        }
+      }
+
+      if (block.type === "code") {
+        const { language } = block.code;
+        return {
+          type: block.type,
+          content: block.code.rich_text.map( r => mapRichText(r, language))
+        }
       }
     }).filter( b => b ));
     return mergeListItems(unmerged);
@@ -139,10 +185,68 @@ export class BlogResolver{
     return result;
   }
 
+  private createFilter = (categories: string[], onlyPublished: boolean, featured: boolean) => {
+    const hasCategories = !!categories.length;
+    const categoryMap = categories.map( category => ({
+      property: "Categories",
+      multi_select: {
+        contains: category
+      }
+    }))
+    if (hasCategories && !onlyPublished && !featured) {
+      return {
+        or: categoryMap
+      }
+    }
+    const res = {
+      and: []
+    }
+    if (onlyPublished) {
+      res.and.push({
+        property: "Publish",
+        checkbox: {
+          equals: true
+        }
+      })
+    }
+
+    if (hasCategories) {
+      res.and.push({
+        or: categoryMap
+      })
+    }
+
+    if (featured) {
+      res.and.push({
+        property: "Featured",
+        checkbox: {
+          equals: true
+        }
+      })
+    }
+    
+    return res;
+  }
+
   @Query(returns => [Metadata])
-  async metadata(){
+  async metadata(
+    @Arg("categories", returns => [String], { nullable: true, defaultValue: [] }) categories: string[] = [],
+    @Arg("onlyPublished", { nullable: true, defaultValue: false }) onlyPublished: boolean = false,
+    @Arg("ascending", { nullable: true, defaultValue: true }) ascending: boolean = true,
+    @Arg("featured", { nullable: true, defaultValue: false }) featured: boolean = false
+  ){
+
+    const filter = this.createFilter(categories, onlyPublished, featured);
+
     const resp = await this.notion.databases.query({
       database_id: this.db_id,
+      filter,
+      sorts: [
+        {
+          property: "PublishDate",
+          direction: ascending ? "ascending" : "descending"
+        }
+      ]
     })
   
     const result = await Promise.all(resp.results.map(async (page) => {
@@ -191,5 +295,88 @@ export class BlogResolver{
     const blocks = await this.getAllPaginatedBlocks(id);
     const parsed = await this.createBlocks(blocks as BlockObjectResponse[]);
     return parsed
+  }
+
+  @Query(returns => [String])
+  async categories(){
+    const res = await this.notion.databases.retrieve({
+      database_id: this.db_id
+    });
+    
+    if (res.properties.Categories.type === "multi_select"){
+      return res.properties.Categories.multi_select.options.map((option) => {
+        return option.name
+      })
+    }
+    return []
+  }
+
+  @Query(returns => [Metadata])
+  async searchMetadata(
+    @Arg("query") query: string
+  ){
+    // const resp = await this.notion.search({
+    //   query,
+    //   filter: {
+    //     value: "page",
+    //     property: "object"
+    //   }
+    // })
+    const resp = await this.notion.databases.query({
+      database_id: this.db_id,
+      filter: {
+        or: [
+          {
+            property: "Name",
+            title: {
+              contains: query
+            }
+          }
+        ]
+      }
+    })
+
+    const results = resp.results as PageObjectResponse[]
+
+    const parsed = await Promise.all(results.map( async (page) => {
+      const metadata = await this.createMetadata(page);
+      return new Metadata(metadata);
+    }));
+
+    return parsed
+
+  }
+
+  @Query(returns => String)
+  async test(){
+
+    const res = await this.notion.databases.query({
+      database_id: this.db_id
+    });
+
+    console.log(res.results);
+
+    return "all good in the hood"
+  }
+
+  @Query(returns => [Post])
+  async posts(){
+    const resp = await this.notion.databases.query({
+      database_id: this.db_id
+    });
+
+    const results = await Promise.all(resp.results.map( async (page) => {
+      if (isFullPage(page)){
+        const metadata = await this.createMetadata(page);
+        const blocks = await this.getAllPaginatedBlocks(page.id);
+        const content = await this.createBlocks(blocks as BlockObjectResponse[]);
+        return {
+          metadata,
+          content
+        }
+      }
+    }));
+
+    return results;
   }
 }

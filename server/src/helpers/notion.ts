@@ -9,7 +9,7 @@ import {
   IListItem,
   IBlock,
   IUnmergedBlock,
-  IList
+  IList,
 } from "@z-squared/types"
 
 /**
@@ -18,11 +18,12 @@ import {
    * @param {RichTextItemResponse} item Notion rich text
    * @returns {RichText}
    */
-export const mapRichText = (item: RichTextItemResponse) : IRichText => {
+export const mapRichText = (item: RichTextItemResponse, language?: string) : IRichText => {
   return {
     plainText: item.plain_text,
-    annotations: item.annotations,
-    href: item.href
+    annotations: {...item.annotations, language },
+    href: item.href ?? undefined,
+    inlineLatex: item.type === "equation"
   }
 }
 
@@ -39,7 +40,7 @@ export const extractPropertyValue = (property: DatabaseProperty) => {
   }
 
   if (property.type === "rich_text"){
-    return property.rich_text.map( item => item.plain_text ).join("");
+    return property.rich_text.map(r => mapRichText(r));
   }
 
   if (property.type === "checkbox"){
@@ -48,8 +49,8 @@ export const extractPropertyValue = (property: DatabaseProperty) => {
 
   if (property.type === "date"){
     return {
-      start: new Date(property.date.start),
-      end: property.date.end ? new Date(property.date.end) : undefined
+      start: property.date?.start ? new Date(property.date.start) : new Date(),
+      end: property.date?.end ? new Date(property.date.end) : undefined
     }
   }
 
@@ -120,7 +121,7 @@ export const mergeListItems = (unmerged: IUnmergedBlock[]) : IBlock[] => {
   let l = 0;
   let r = 1;
   let list: IList;
-  let listType : string;
+  let listType : "numbered_list" | "bulleted_list";
   while(l < unmerged.length){
     const left = unmerged[l];
     const right = r < unmerged.length ? unmerged[r] : undefined;
@@ -144,7 +145,7 @@ export const mergeListItems = (unmerged: IUnmergedBlock[]) : IBlock[] => {
       list = {
         children: [right.content as IListItem]
       }
-      listType = right.type.slice(0, -5);
+      listType = right.type.slice(0, -5) as "numbered_list" | "bulleted_list";
       r++
       merged.push(left as IBlock);
       continue;

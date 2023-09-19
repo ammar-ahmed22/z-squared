@@ -1,4 +1,5 @@
 import { ObjectType, Field, createUnionType } from "type-graphql";
+import { Metadata } from "./Metadata";
 import { 
   IRichText, 
   IAnnotations, 
@@ -7,11 +8,17 @@ import {
   IListItem,
   IList,
   IBlock,
-  IBlockContent 
+  IBlockContent,
+  IPost, 
+  IMetadata,
+  BlockType,
+  IEquation
 } from "@z-squared/types";
 
 
-@ObjectType()
+@ObjectType({
+  description: "Metadata for rich text"
+})
 export class Annotations implements IAnnotations{
   @Field()
   public bold: boolean;
@@ -30,10 +37,15 @@ export class Annotations implements IAnnotations{
 
   @Field(returns => String)
   public color: AnnotationsColor;
+
+  @Field(returns => String, { nullable: true })
+  public language?: string
   
 }
 
-@ObjectType()
+@ObjectType({
+  description: "Rich text object"
+})
 export class RichText implements IRichText{
   @Field()
   public plainText: string
@@ -43,10 +55,15 @@ export class RichText implements IRichText{
 
   @Field({ nullable: true })
   public href?: string
+
+  @Field(returns => Boolean, { nullable: true })
+  inlineLatex?: boolean
 }
 
 
-@ObjectType()
+@ObjectType({ 
+  description: "Image object"
+})
 export class Image implements IImage{
   @Field()
   public url: string
@@ -56,7 +73,9 @@ export class Image implements IImage{
 }
 
 
-@ObjectType()
+@ObjectType({
+  description: "List item with unlimited depth of children"
+})
 export class ListItem implements IListItem{
   @Field(returns => [RichText])
   public content: IRichText[]
@@ -71,10 +90,17 @@ export class List implements IList{
   public children: IListItem[]
 }
 
+@ObjectType()
+export class Equation implements IEquation {
+  @Field()
+  public expression: string
+}
+
 
 export const BlockContent = createUnionType({
   name: "BlockContent",
-  types: () => [Image, List, RichText] as const,
+  description: "Union type for block content",
+  types: () => [Image, List, RichText, Equation] as const,
   resolveType: (value) => {
     if ("plainText" in value){
       return RichText
@@ -85,17 +111,33 @@ export const BlockContent = createUnionType({
     if ("url" in value){
       return Image
     }
+
+    if ("expression" in value) {
+      return Equation
+    }
+    
     return undefined;
   }
 })
 
 
-@ObjectType()
+@ObjectType({
+  description: "Block content for posts"
+})
 export class Block implements IBlock{
-  @Field()
-  public type: string;
+  @Field(returns => String)
+  public type: BlockType;
 
   @Field(returns => [BlockContent])
   public content: IBlockContent[]
 }
 
+@ObjectType()
+export class Post implements IPost{
+
+  @Field(returns => Metadata)
+  public metadata: IMetadata
+
+  @Field(returns => [Block])
+  public content: IBlock[]
+}

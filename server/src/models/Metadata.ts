@@ -1,7 +1,10 @@
 import { ID, ObjectType, Field } from "type-graphql";
-import { IMetadata } from "@z-squared/types";
+import { IMetadata, IRichText } from "@z-squared/types";
+import { RichText } from "./Content";
 
-@ObjectType()
+@ObjectType({
+  description: "Post metadata"
+})
 export class Metadata implements IMetadata{
   constructor(params?: IMetadata){
     Object.assign(this, params);
@@ -26,4 +29,13 @@ export class Metadata implements IMetadata{
 
   @Field()
   public slug: string
+
+  @Field(returns => [RichText])
+  public description: IRichText[]
+
+  @Field({ nullable: true })
+  public image?: string
+
+  @Field(returns => Boolean, { nullable: true })
+  public featured?: boolean
 }

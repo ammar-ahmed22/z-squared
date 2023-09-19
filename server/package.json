@@ -17,7 +17,7 @@
   "dependencies": {
     "@apollo/server": "^4.4.0",
     "@notionhq/client": "^2.2.3",
-    "@z-squared/types": "^1.1.8",
+    "@z-squared/types": "^1.1.22",
     "class-validator": "^0.14.0",
     "cors": "^2.8.5",
     "dotenv": "^16.0.3",
@@ -31,6 +31,7 @@
     "build": "tsc",
     "dev": "nodemon --watch './**/*.ts' --exec ts-node ./src/index.ts",
     "update-types": "yarn remove @z-squared/types && yarn add @z-squared/types && yarn install && yarn upgrade",
-    "debug": "node --inspect --require ts-node/register ./src/index.ts"
+    "debug": "node --inspect --require ts-node/register ./src/index.ts",
+    "dev:start": "ts-node src/index.ts"
   }
 }

@@ -3,22 +3,31 @@
 # !!!   DO NOT MODIFY THIS FILE BY YOURSELF   !!!
 # -----------------------------------------------
 
+"""Metadata for rich text"""
 type Annotations {
   bold: Boolean!
   code: Boolean!
   color: String!
   italic: Boolean!
+  language: String
   strikethrough: Boolean!
   underline: Boolean!
 }
 
+"""Block content for posts"""
 type Block {
   content: [BlockContent!]!
   type: String!
 }
 
-union BlockContent = Image | List | RichText
+"""Union type for block content"""
+union BlockContent = Equation | Image | List | RichText
 
+type Equation {
+  expression: String!
+}
+
+"""Image object"""
 type Image {
   caption: [RichText!]!
   url: String!
@@ -28,30 +37,46 @@ type List {
   children: [ListItem!]!
 }
 
+"""List item with unlimited depth of children"""
 type ListItem {
   children: [ListItem!]
   content: [RichText!]!
 }
 
+"""Post metadata"""
 type Metadata {
   authors: [String!]!
   categories: [String!]!
+  description: [RichText!]!
+  featured: Boolean
   id: ID!
+  image: String
   name: String!
   publish: Boolean!
   publishDate: Timestamp!
   slug: String!
 }
 
-type Query {
-  content(id: String!): [Block!]!
-  metadata: [Metadata!]!
-  metadataBySlug(slug: String!): Metadata!
+type Post {
+  content: [Block!]!
+  metadata: Metadata!
 }
 
+type Query {
+  categories: [String!]!
+  content(id: String!): [Block!]!
+  metadata(ascending: Boolean = true, categories: [String!] = [], featured: Boolean = false, onlyPublished: Boolean = false): [Metadata!]!
+  metadataBySlug(slug: String!): Metadata!
+  posts: [Post!]!
+  searchMetadata(query: String!): [Metadata!]!
+  test: String!
+}
+
+"""Rich text object"""
 type RichText {
   annotations: Annotations!
   href: String
+  inlineLatex: Boolean
   plainText: String!
 }
 
