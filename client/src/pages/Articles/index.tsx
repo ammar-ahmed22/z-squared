@@ -9,7 +9,8 @@ import {
   TagLabel,
   TagCloseButton,
   Image,
-  SimpleGrid
+  SimpleGrid,
+  useColorModeValue
 } from "@chakra-ui/react"
 import { Link as ReactLink } from "react-router-dom";
 import { useQuery, useLazyQuery } from "@apollo/client";
@@ -20,6 +21,7 @@ import { CATEGORIES_QUERY, CategoriesQuery } from "../../graphql/queries/Categor
 import Card from "../../components/Card";
 import Search from "../../components/Search";
 import { ArticlesSkeleton } from "./skeletons";
+import { Helmet } from "react-helmet";
 
 
 const Articles : React.FC = () => {
@@ -96,8 +98,13 @@ const Articles : React.FC = () => {
     setFilterCategories(prev => new Set([...prev.values()].filter(x => x !== category)))
   }
 
+  const accentColor = useColorModeValue("brand.dark.200", "brand.light.700");
+
   return (
     <Box w="100%">
+      <Helmet>
+        <title>Articles</title>
+      </Helmet>
       <VStack h="25vh" spacing="5" justify="center" >
         <Heading fontFamily="heading" as="h1" textAlign="center" size="3xl" >📝 <Text as="span">Articles</Text></Heading>
         <Text align="center" fontSize="2xl" >Corporations, creed, culture and everything in between.</Text>
@@ -116,7 +123,7 @@ const Articles : React.FC = () => {
                 <Tag
                   key={category}
                   variant="solid"
-                  colorScheme="brand2.green"
+                  colorScheme="brand.green"
                   size="lg"
                   transform="scale(0.95)"
                   transition="transform .2s ease-in-out"
@@ -152,7 +159,7 @@ const Articles : React.FC = () => {
               </HStack>
             )
           }
-          <SimpleGrid columns={2} spacing="5" pt="5" >
+          <SimpleGrid columns={{ base: 1, md: 2}} spacing="5" pt="5" >
             {
               searching && metadata && !metadata.length && (
                 <Text>
@@ -198,8 +205,8 @@ const Articles : React.FC = () => {
                         }
                       </HStack>
                       
-                      <Text color="brand2.light.900" mb="1" >{elapsed}</Text>
-                      {!!authors.length && <Text color="brand2.light.900" mb="1" >By: {authors.join(", ")}</Text>}
+                      <Text color={accentColor} mb="1" >{elapsed}</Text>
+                      {!!authors.length && <Text color={accentColor} mb="1" >By: {authors.join(", ")}</Text>}
                       <Text >{description.map( text => text.plainText).join("")}</Text>
                     </Box>
                   </Card>

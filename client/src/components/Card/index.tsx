@@ -17,11 +17,12 @@ const Card : React.FC<CardProps> = ({
   background, 
   transform,
   transition,
-  _hover, 
+  _hover,
+  borderRadius,
   ...rest 
 }) => {
 
-  const cardBg = useColorModeValue("brand2.light.200", "brand2.dark.500")
+  const cardBg = useColorModeValue("brand.light.200", "brand.dark.500")
 
   return (
     <LinkBox
@@ -30,7 +31,7 @@ const Card : React.FC<CardProps> = ({
       p={p ?? padding ?? "5"}
       bg={bg ?? background ?? cardBg}
       transform={transform ?? "scale(0.95)"}
-      borderRadius="lg"
+      borderRadius={borderRadius ?? "lg"}
       transition={transition ?? "transform .2s ease-in-out"}
       _hover={_hover ?? {
         transform: "scale(1)",

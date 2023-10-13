@@ -17,13 +17,13 @@ const Search : React.FC<SearchProps> = ({
   const [value, setValue] = useState<string>("");
 
   return (
-    <InputGroup colorScheme="brand2.dark">
+    <InputGroup colorScheme="brand.dark">
       <InputRightElement 
         pointerEvents="none"
         children={<SearchIcon color="gray.300" />}
       />
       <Input 
-        colorScheme="brand2.dark"
+        colorScheme="brand.dark"
         placeholder={placeholder}
         value={value}
         onChange={(e) => {

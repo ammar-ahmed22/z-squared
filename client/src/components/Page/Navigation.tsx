@@ -28,7 +28,7 @@ const Navigation : React.FC<NavigationProps> = ({ active }) => {
   const logoFilter = useColorModeValue("invert(8%) sepia(12%) saturate(1141%) hue-rotate(177deg) brightness(98%) contrast(89%)", "invert(98%) sepia(5%) saturate(3260%) hue-rotate(301deg) brightness(111%) contrast(63%)")
   // const logoSrc = useColorModeValue(LightLogov2, DarkLogov2);
   const greenFilter = "invert(45%) sepia(53%) saturate(548%) hue-rotate(116deg) brightness(90%) contrast(90%)"
-  const textColor = useColorModeValue("brand2.dark.900", "brand2.light.500");
+  const textColor = useColorModeValue("brand.dark.900", "brand.light.500");
   const capitalize = (str: string) => {
     return str[0].toUpperCase() + str.substring(1);
   }
@@ -48,13 +48,13 @@ const Navigation : React.FC<NavigationProps> = ({ active }) => {
                 to={"/" + (option === "home" ? "" : option)}
                 fontWeight={active === option ? "bold" : "normal"}
                 pos="relative"
-                // color={active === option ? "brand2.green.500" : "current"}
+                // color={active === option ? "brand.green.500" : "current"}
                 _after={{
                   content: '" "',
                   pos: "absolute",
                   height: "2px",
                   width: "50%",
-                  bg: "brand2.green.500",
+                  bg: "brand.green.500",
                   bottom: 0,
                   left: "50%",
                   transform: "translate(-50%)",

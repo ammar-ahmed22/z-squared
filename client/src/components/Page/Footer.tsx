@@ -2,45 +2,32 @@ import React from "react";
 import { 
   HStack,
   Text,
-  Box,
-  IconButton,
   Link,
-  Icon 
+  Icon,
+  VStack
 } from "@chakra-ui/react";
-import { FaLinkedin, FaEnvelope } from "react-icons/fa";
+import { FaLinkedin } from "react-icons/fa";
 
 const Footer: React.FC = () => {
 
   return (
-    <HStack h="20vh" justify="space-around" >
-      <Box>
-        <Text>Zaryab</Text>
-        <HStack>
-          <Link>
+    <VStack mt="5" pb="5"  >
+      <Text fontWeight="bold" fontSize="lg" >Connect with us!</Text>
+      <HStack justify="center" w="100%" spacing="5" >
+        <Text>Zaryab{" "}
+          <Link color="brand.green.500" fontSize="lg" verticalAlign="middle" href="https://www.linkedin.com/in/zaryab-ahmed/" isExternal >
+              <Icon as={FaLinkedin} />
+          </Link>
+        </Text>
+        <Text>Zaid{" "}
+          <Link color="brand.green.500" fontSize="lg" verticalAlign="middle" href="https://www.linkedin.com/in/zaid-marfatia/" isExternal >
             <Icon as={FaLinkedin} />
-            {/* LinkedIn */}
           </Link>
-          <Link>
-            <Icon as={FaEnvelope} />
-            {/* LinkedIn */}
-          </Link>
-        </HStack>
-        
-      </Box>
-      <Box>
-        <Text>Zaid</Text>
-        <HStack>
-          <Link>
-            <Icon as={FaLinkedin} />
-            {/* LinkedIn */}
-          </Link>
-          <Link>
-            <Icon as={FaEnvelope} />
-            {/* LinkedIn */}
-          </Link>
-        </HStack>
-      </Box>
-    </HStack>
+        </Text>
+      </HStack>
+      <Text fontSize="sm" >Built with 💚 by <Link color="brand.green.500" href="https://ammarahmed.ca" isExternal >Ammar Ahmed</Link></Text>
+      <Text fontSize="sm" >All Rights Reserved © </Text>
+    </VStack>
   )
 }
 

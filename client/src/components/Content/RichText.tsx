@@ -10,9 +10,9 @@ type RichTextProps = TextProps & {
 }
 
 const RichText: React.FC<RichTextProps> = ({ data, blockKey, ...rest }) => {
-  const defaultCodeColor = useColorModeValue("brand2.dark.900", "brand2.light.500");
-  const defaultColor = useColorModeValue("brand2.dark", "brand2.light");
-  const codeBg = useColorModeValue("brand2.green.400", "brand2.green.700");
+  const defaultCodeColor = useColorModeValue("brand.dark.900", "brand.light.500");
+  const defaultColor = useColorModeValue("brand.dark", "brand.light");
+  const codeBg = useColorModeValue("brand.green.400", "brand.green.700");
   const colorNumber = useColorModeValue(".700", ".300")
   function createProps<T extends TextProps | LinkProps>(annots: IAnnotations): T{
     let result: TextProps | LinkProps = {};

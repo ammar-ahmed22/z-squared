@@ -6,8 +6,13 @@ import {
   Text,
   HStack,
   Image,
-  Box 
+  Box,
+  useColorModeValue,
+  SimpleGrid 
 } from "@chakra-ui/react";
+import Card from "../../components/Card";
+import { formatDistance } from "date-fns";
+import { Link as ReactLink } from "react-router-dom";
 
 const Featured: React.FC = () => {
 
@@ -24,24 +29,46 @@ const Featured: React.FC = () => {
     }
   }, [data, loading, error])
 
+  const accentColor = useColorModeValue("brand.dark.200", "brand.light.700");
+  const cardBg = useColorModeValue("rgba(255, 255, 255, 0.6)", "rgba(0, 0, 0, 0.6)");
+
   return (
     <VStack align="flex-start" p="5" >
-      <Text fontFamily="heading" fontSize="4xl" fontWeight="bold" color="brand2.green.700" >Featured Posts</Text>
+      <Text fontFamily="heading" fontSize="4xl" fontWeight="bold" color="brand.green.700" variant="blackOutline" >Featured Posts:</Text>
+      <SimpleGrid columns={{ base: 1, lg: 2 }} >
       {
         !loading && data && (
-          data.metadata.map((metadata) => {
+          data.metadata.map((metadata, i) => {
+            const date = new Date(metadata.publishDate);
+            const now = new Date();
+            const distance = formatDistance(date, now, { addSuffix: true });
             return (
-              <HStack key={metadata.id}>
-                <Image src={metadata.image}  h="30vh" w="50vh" objectFit="cover" />
-                <Box>
-                  <Text fontFamily="heading" fontSize="4xl" fontWeight="bold" >{metadata.name}</Text>
-                  <Text>{metadata.description.map(r => r.plainText).join("")}</Text>
-                </Box>
-              </HStack>
+              <Card 
+                w={{ base: "100%", lg: "60vh"}} 
+                bg={cardBg}
+                backdropFilter="blur(10px)" 
+                shadow="none"  
+                to={`/articles/post/${metadata.slug}`} 
+                as={ReactLink}
+              >
+                <HStack flexDir={"column"} w="100%" spacing={5} >
+                  <Image src={metadata.image}  h="40vh" w={{ base: "100%", lg: "60vh"}} objectFit="cover" flexShrink={0} borderRadius="md" />
+                  <VStack w="100%" align="center" >
+                    <Box>
+                      <Text fontFamily="heading" fontSize="4xl" fontWeight="bold" >{metadata.name}</Text>
+                      <Text color={accentColor} fontSize="sm" >{distance}</Text>
+                      <Text color={accentColor} fontSize="sm">By: {metadata.authors.join(", ")}</Text>
+                      <Text>{metadata.description.map(r => r.plainText).join("")}</Text>
+                    </Box>
+                  </VStack>
+                </HStack>
+              </Card>
             )
           })
         )
       }
+      </SimpleGrid>
+      
     </VStack>
   )
 }

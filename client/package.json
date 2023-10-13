@@ -21,6 +21,7 @@
     "graphql": "^16.6.0",
     "react": "^18.1.0",
     "react-dom": "^18.1.0",
+    "react-helmet": "^6.1.0",
     "react-icons": "^3.0.0",
     "react-mathjax": "^1.0.1",
     "react-router-dom": "^6.8.2",
@@ -52,6 +53,7 @@
     ]
   },
   "devDependencies": {
+    "@types/react-helmet": "^6.1.7",
     "@types/react-mathjax": "^1.0.1",
     "@types/react-syntax-highlighter": "^15.5.7"
   }

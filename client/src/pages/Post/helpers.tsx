@@ -60,7 +60,7 @@ const componentProps: ComponentPropsMapping = {
         thickness="4px"
         speed="0.65s"
         emptyColor="gray.200"
-        color="brand2.green.500"
+        color="brand.green.500"
         size="xl"
       />
     ),
@@ -182,7 +182,7 @@ export const renderBlock = (block: IBlock, key: string, mode: ColorMode) => {
         const { language } = richText.annotations;
         return (
           <Box
-            bg={colorModeValue("brand2.light.100", "brand2.dark.500", mode)}
+            bg={colorModeValue("brand.light.100", "brand.dark.500", mode)}
             borderRadius="md"
             pos="relative"
           >
@@ -197,7 +197,7 @@ export const renderBlock = (block: IBlock, key: string, mode: ColorMode) => {
             <IconButton 
               aria-label="copy the code block"
               icon={<BiCopy />}
-              colorScheme="brand2.green"
+              colorScheme="brand.green"
               pos="absolute"
               top="1"
               right="1"
@@ -263,7 +263,7 @@ export const useRenderedBlocks = (data?: IBlock[]): JSX.Element[] => {
           thickness="4px"
           speed="0.65s"
           emptyColor="gray.200"
-          color="brand2.green.500"
+          color="brand.green.500"
           size="xl"
         />
       ),
@@ -272,7 +272,7 @@ export const useRenderedBlocks = (data?: IBlock[]): JSX.Element[] => {
     "equation": {},
     "code": {
       box: {
-        bg: useColorModeValue("brand2.light.100", "brand2.dark.500"),
+        bg: useColorModeValue("brand.light.100", "brand.dark.500"),
         borderRadius: "md",
         pos: "relative"
       },
@@ -378,7 +378,7 @@ export const useRenderedBlocks = (data?: IBlock[]): JSX.Element[] => {
                     <IconButton 
                       aria-label="copy the code block"
                       icon={<BiCopy />}
-                      colorScheme="brand2.green"
+                      colorScheme="brand.green"
                       pos="absolute"
                       top="1"
                       right="1"

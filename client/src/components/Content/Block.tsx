@@ -86,7 +86,7 @@ const Block: React.FC<BlockProps> = ({
           thickness="4px"
           speed="0.65s"
           emptyColor="gray.200"
-          color="brand2.green.500"
+          color="brand.green.500"
           size="xl"
         />
       ),
@@ -95,7 +95,7 @@ const Block: React.FC<BlockProps> = ({
     "equation": {},
     "code": {
       box: {
-        bg: useColorModeValue("brand2.light.100", "brand2.dark.500"),
+        bg: useColorModeValue("brand.light.100", "brand.dark.500"),
         borderRadius: "md",
         pos: "relative",
         mb: 2,
@@ -237,7 +237,7 @@ const Block: React.FC<BlockProps> = ({
               {...copyProps}
               aria-label="copy the code block"
               // icon={<BiCopy />}
-              colorScheme="brand2.green"
+              colorScheme="brand.green"
               pos="absolute"
               top="1"
               right="1"
